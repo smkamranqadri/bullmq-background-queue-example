@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: bullmq-app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+    profiles:
+      - prod
+
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: bullmq-app-dev
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - redis
+    profiles:
+      - dev
+
+volumes:
+  redis-data:
